@@ -13,6 +13,26 @@
 const char* ssid = "Pablo";
 const char* password = "436143028";
 
+ESP12f esp = ESP12f();
+
+//Conf Valvulas y riego
+const int numValvulas = 2;
+int pinesValvulas[] = {4, 5};
+valvula valvulas[] = { //Inicialización del objeto valvulas (Uso los dos relays restantes de la placa para no joder el server web)
+  valvula(pinesValvulas[0]),
+  valvula(pinesValvulas[1])
+};
+//Temporización
+unsigned long previousMillis = 0;     
+const long interval = 1000;
+int tiemposRiego[] = {2, 3}; //minutos
+int horaRiego = 16;
+int minutoRiego = 11;
+int fechaHora[] = {0,0,0};
+//Control Manual
+boolean controlManual = false;  //automático por defecto
+
+
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 // Create a WebSocket object
@@ -94,14 +114,17 @@ void initWebSocket() {
 }
 
 void setup() {
-  Serial.begin(115200);
-
+  
   // Set GPIOs as outputs
   for (int i =0; i<NUM_OUTPUTS; i++){
     pinMode(outputGPIOs[i], OUTPUT);
     digitalWrite(outputGPIOs[i],LOW);
   }
-  
+  //setea válvulas usando objetos (Solo 2)
+  for (int i=0; i<numValvulas;i++){ //asigna parametros de riego a cada valvula
+    valvulas[i].asignaParametros(i, tiemposRiego[i], horaRiego, minutoRiego);
+  }
+
   initFS();
   initWiFi();
   initWebSocket();
@@ -119,4 +142,20 @@ void setup() {
 void loop() {
   ws.cleanupClients();
   AsyncElegantOTA.loop();
+
+  if (!controlManual){ //pruebaBlinkeo
+    unsigned long currentMillis = millis();
+    if (currentMillis - previousMillis >= interval) {
+      previousMillis = currentMillis;
+
+      esp.fechaHora();
+      fechaHora[0] = esp.obtenerDia();
+      fechaHora[1] = esp.obtenerHora();
+      fechaHora[2] = esp.obtenerMinutos();
+  
+      for (int i = 0; i < numValvulas; i++){
+        valvulas[i].compruebaRiego(fechaHora);
+      }
+    }
+  }  
 }

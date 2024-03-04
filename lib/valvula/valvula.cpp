@@ -5,6 +5,7 @@ valvula::valvula(int pin){
     _pin = pin;
     pinMode(_pin, OUTPUT);
     desactivar();
+    _activa=false;
 
 };
 

@@ -12,7 +12,7 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org");
 
 ESP12f::ESP12f()
 {
-    
+    Serial.begin(115200);
 };
 
 void ESP12f::fechaHora(){ //esta funcion linda me registra el día y la hora con los minutos
