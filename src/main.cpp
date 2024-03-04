@@ -6,6 +6,10 @@
 #include <Arduino_JSON.h>
 #include <AsyncElegantOTA.h>
 
+#include <NTPClient.h>
+#include <valvula.h>
+#include <ESP12f.h>
+
 const char* ssid = "Pablo";
 const char* password = "436143028";
 
@@ -97,6 +101,7 @@ void setup() {
     pinMode(outputGPIOs[i], OUTPUT);
     digitalWrite(outputGPIOs[i],LOW);
   }
+  
   initFS();
   initWiFi();
   initWebSocket();
