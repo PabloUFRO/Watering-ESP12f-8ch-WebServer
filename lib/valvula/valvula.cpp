@@ -5,7 +5,7 @@ valvula::valvula(int pin){
     _pin = pin;
     pinMode(_pin, OUTPUT);
     desactivar();
-    _activa=false;
+    _state=false;
 
 };
 
@@ -19,13 +19,13 @@ void valvula::compruebaRiego(int* fechaHora){
 
     if (_diaActual != _diaRiego){   //Si los dias no coinciden, significa que no se ha regado
         
-        if ((_horaActual = _horaRiego) and (_minutoActual >= _minutoRiego) and (!_activa)){ //Si es hora de riego y está apagada:
+        if ((_horaActual = _horaRiego) and (_minutoActual >= _minutoRiego) and (!_state)){ //Si es hora de riego y está apagada:
             Serial.print("Iniciando riego bancal N° ");
             Serial.println(_numValvula);
             activar();
         }
 
-        if ((_horaActual = _horaRiego) and (_minutoActual >= _minutoRiego) and (_activa)){ //Aqui se está regando, se debe corroborar el tiempo
+        if ((_horaActual = _horaRiego) and (_minutoActual >= _minutoRiego) and (_state)){ //Aqui se está regando, se debe corroborar el tiempo
             if (_minutoActual - _minutoRiego >= _tiempoRiego){//ya se cumplió el tiempo, se desactiva y actualiza el dia
                 Serial.println("Periodo de riego finalizado. Desactvando ...");
                 desactivar();
@@ -47,7 +47,7 @@ void valvula::compruebaRiego(int* fechaHora){
 };
 
 void valvula::asignaParametros(int i, int tiempoRiego, int horaRiego, int minutoRiego){
-    _numValvula = i+1;
+    _numValvula = i;
     _tiempoRiego = tiempoRiego;
     _horaRiego = horaRiego;
     _minutoRiego = minutoRiego;
@@ -55,10 +55,10 @@ void valvula::asignaParametros(int i, int tiempoRiego, int horaRiego, int minuto
 
 void valvula::activar(){
     digitalWrite(_pin,HIGH);
-    _activa = true;
+    _state = true;
 };
 
 void valvula::desactivar(){
     digitalWrite(_pin,LOW);
-    _activa = false;
+    _state = false;
 };

@@ -20,7 +20,7 @@ class valvula
         int _horaActual;
         int _minutoActual;
 
-        bool _activa; 
+        bool _state; 
 
     private:
         int _pin;

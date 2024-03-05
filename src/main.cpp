@@ -16,11 +16,15 @@ const char* password = "436143028";
 ESP12f esp = ESP12f();
 
 //Conf Valvulas y riego
-const int numValvulas = 2;
-int pinesValvulas[] = {4, 5};
+const int numValvulas = 6;
+int pinesValvulas[] = {16, 14, 12, 13, 15, 0};
 valvula valvulas[] = { //Inicialización del objeto valvulas (Uso los dos relays restantes de la placa para no joder el server web)
   valvula(pinesValvulas[0]),
-  valvula(pinesValvulas[1])
+  valvula(pinesValvulas[1]),
+  valvula(pinesValvulas[2]),
+  valvula(pinesValvulas[3]),
+  valvula(pinesValvulas[4]),
+  valvula(pinesValvulas[5])
 };
 //Temporización
 unsigned long previousMillis = 0;     
@@ -38,10 +42,6 @@ AsyncWebServer server(80);
 // Create a WebSocket object
 AsyncWebSocket ws("/ws");
 
-// Set number of outputs
-#define NUM_OUTPUTS 6
-// Assign each GPIO to an output
-int outputGPIOs[NUM_OUTPUTS] = {16, 14, 12, 13, 15, 0}; //GPIO 16&15 detalle inicio.
 
 // Initialize LittleFS
 void initFS() {
@@ -62,31 +62,37 @@ void initWiFi() {
 Serial.println(WiFi.localIP());
 }
 
-String getOutputStates(){
+String getValveStates(){
   JSONVar myArray;
-  for (int i =0; i<NUM_OUTPUTS; i++){
-    myArray["gpios"][i]["output"] = String(outputGPIOs[i]);
-    myArray["gpios"][i]["state"] = String(digitalRead(outputGPIOs[i]));
+  for (int i =0; i<numValvulas; i++){
+    myArray["valves"][i]["num"] = String(valvulas[i]._numValvula);
+    myArray["valves"][i]["state"] = String(valvulas[i]._state);
   }
   String jsonString = JSON.stringify(myArray);
   return jsonString;
 }
 
 void notifyClients(String state) {
-ws.textAll(state);
+  ws.textAll(state);
 }
 
+//run whenever we receive new data from the clients via the WebSocket protocol. The client will send the "states" message to request the current valve states or a message containing the GPIO number to change the state.
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   AwsFrameInfo *info = (AwsFrameInfo*)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
     data[len] = 0;
-    if (strcmp((char*)data, "states") == 0) {
-      notifyClients(getOutputStates());
+    if (strcmp((char*)data, "states") == 0) { //If we receive the "states" message, send a message to all clients with the state of all valves using the notifyClients function. 
+      notifyClients(getValveStates());
     }
-    else{
-      int gpio = atoi((char*)data);
-      digitalWrite(gpio, !digitalRead(gpio));
-      notifyClients(getOutputStates());
+    else{ //If the message is not "states", it means we’ve received a valveNumber and we want to toggle its state
+      int valveNumber = atoi((char*)data);
+      if (!valvulas[valveNumber]._state){
+        valvulas[valveNumber].activar();
+      }
+      else{
+        valvulas[valveNumber].desactivar();
+      }
+      notifyClients(getValveStates());
     }
   }
 }
@@ -114,12 +120,6 @@ void initWebSocket() {
 }
 
 void setup() {
-  
-  // Set GPIOs as outputs
-  for (int i =0; i<NUM_OUTPUTS; i++){
-    pinMode(outputGPIOs[i], OUTPUT);
-    digitalWrite(outputGPIOs[i],LOW);
-  }
   //setea válvulas usando objetos (Solo 2)
   for (int i=0; i<numValvulas;i++){ //asigna parametros de riego a cada valvula
     valvulas[i].asignaParametros(i, tiemposRiego[i], horaRiego, minutoRiego);
@@ -133,29 +133,22 @@ void setup() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(LittleFS, "/index.html", "text/html",false);
   });
+  
   server.serveStatic("/", LittleFS, "/");
+  
   AsyncElegantOTA.begin(&server); // Start ElegantOTA
-  // Start server
-  server.begin();
+  
+  server.begin(); // Start server
 }
 
 void loop() {
   ws.cleanupClients();
-  AsyncElegantOTA.loop();
+  AsyncElegantOTA.loop(); 
 
-  if (!controlManual){ //pruebaBlinkeo
-    unsigned long currentMillis = millis();
-    if (currentMillis - previousMillis >= interval) {
-      previousMillis = currentMillis;
-
-      esp.fechaHora();
-      fechaHora[0] = esp.obtenerDia();
-      fechaHora[1] = esp.obtenerHora();
-      fechaHora[2] = esp.obtenerMinutos();
+  unsigned long currentMillis = millis();
   
-      for (int i = 0; i < numValvulas; i++){
-        valvulas[i].compruebaRiego(fechaHora);
-      }
-    }
-  }  
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    Serial.println(getValveStates());
+  }
 }
