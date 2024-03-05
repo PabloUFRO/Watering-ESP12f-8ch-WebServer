@@ -6,6 +6,7 @@ valvula::valvula(int pin){
     pinMode(_pin, OUTPUT);
     desactivar();
     _state=false;
+    _diaRiego = 7;
 
 };
 
@@ -27,7 +28,7 @@ void valvula::compruebaRiego(int* fechaHora){
 
         if ((_horaActual = _horaRiego) and (_minutoActual >= _minutoRiego) and (_state)){ //Aqui se está regando, se debe corroborar el tiempo
             if (_minutoActual - _minutoRiego >= _tiempoRiego){//ya se cumplió el tiempo, se desactiva y actualiza el dia
-                Serial.println("Periodo de riego finalizado. Desactvando ...");
+                Serial.println("Periodo de riego finalizado. Desactivando ...");
                 desactivar();
                 _diaRiego = _diaActual;
             }

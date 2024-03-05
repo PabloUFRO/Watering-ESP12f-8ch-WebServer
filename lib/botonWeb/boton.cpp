@@ -6,9 +6,9 @@ boton::boton(){
 };
 
 void boton::activar(){
-    _estado = true;
+    _state = true;
 };
 
 void boton::desactivar(){
-    _estado = false;
+    _state = false;
 };

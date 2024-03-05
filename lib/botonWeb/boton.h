@@ -8,7 +8,7 @@ class boton
         boton();
         void activar();
         void desactivar(); 
-        boolean _estado; 
+        boolean _state; 
     private:
             
 };

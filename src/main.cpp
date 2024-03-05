@@ -9,9 +9,10 @@
 #include <NTPClient.h>
 #include <valvula.h>
 #include <ESP12f.h>
+#include <boton.h>
 
-const char* ssid = "Pablo";
-const char* password = "436143028";
+const char* ssid = "LINK";
+const char* password = "MEMECACATROTRONINICACA2020";
 
 ESP12f esp = ESP12f();
 
@@ -28,13 +29,14 @@ valvula valvulas[] = { //Inicialización del objeto valvulas (Uso los dos relays
 };
 //Temporización
 unsigned long previousMillis = 0;     
-const long interval = 1000;
-int tiemposRiego[] = {2, 3}; //minutos
-int horaRiego = 16;
-int minutoRiego = 11;
+const long interval = 10000;
+int tiemposRiego[] = {5, 3, 7, 2, 2, 4}; //minutos
+int horaRiego = 17;
+int minutoRiego = 5;
 int fechaHora[] = {0,0,0};
+
 //Control Manual
-boolean controlManual = false;  //automático por defecto
+boton controlManual;
 
 
 // Create AsyncWebServer object on port 80
@@ -145,10 +147,20 @@ void loop() {
   ws.cleanupClients();
   AsyncElegantOTA.loop(); 
 
-  unsigned long currentMillis = millis();
-  
-  if (currentMillis - previousMillis >= interval) {
-    previousMillis = currentMillis;
-    Serial.println(getValveStates());
+  if (!controlManual._state){ //Consulta boton controlManual para riego automático
+    unsigned long currentMillis = millis();
+    if (currentMillis - previousMillis >= interval) {
+      previousMillis = currentMillis;
+      
+      esp.fechaHora();
+      fechaHora[0] = esp.obtenerDia();
+      fechaHora[1] = esp.obtenerHora();
+      fechaHora[2] = esp.obtenerMinutos();
+      
+      for (int i = 0; i < numValvulas; i++){
+        valvulas[i].compruebaRiego(fechaHora);
+
+      }
+    }
   }
 }
