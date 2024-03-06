@@ -5,7 +5,7 @@
 #include "LittleFS.h"
 #include <Arduino_JSON.h>
 #include <AsyncElegantOTA.h>
-
+#include <WebSerial.h>
 #include <NTPClient.h>
 #include <valvula.h>
 #include <ESP12f.h>
@@ -47,6 +47,14 @@ AsyncWebServer server(80);
 // Create a WebSocket object
 AsyncWebSocket ws("/ws");
 
+void recvMsg(uint8_t *data, size_t len){
+  WebSerial.println("Received Data...");
+  String d = "";
+  for(int i=0; i < len; i++){
+    d += char(data[i]);
+  }
+  WebSerial.println(d);
+}
 
 // Initialize LittleFS
 void initFS() {
@@ -134,6 +142,7 @@ void setup() {
   initWebSocket();
 
   server.serveStatic("/", LittleFS, "/");
+  
   // Server Root URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(LittleFS, "/index.html", "text/html");
@@ -162,7 +171,9 @@ void setup() {
   server.addHandler(&events);
 
   AsyncElegantOTA.begin(&server); // Start ElegantOTA
-  
+  WebSerial.begin(&server);
+  WebSerial.msgCallback(recvMsg);
+
   server.begin(); // Start server
 }
 
@@ -175,6 +186,7 @@ void loop() {
     if (currentMillis - previousMillis >= interval) {
       previousMillis = currentMillis;
       
+      WebSerial.println("Hello!");
       esp.fechaHora();
       fechaHora[0] = esp.obtenerDia();
       fechaHora[1] = esp.obtenerHora();
