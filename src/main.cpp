@@ -11,8 +11,11 @@
 #include <ESP12f.h>
 #include <boton.h>
 
-const char* ssid = "LINK";
-const char* password = "MEMECACATROTRONINICACA2020";
+const char* ssid = "Pablo";
+const char* password = "436143028";
+
+// Create an Event Source on /events
+AsyncEventSource events("/events");
 
 ESP12f esp = ESP12f();
 
@@ -122,7 +125,6 @@ void initWebSocket() {
 }
 
 void setup() {
-  //setea válvulas usando objetos (Solo 2)
   for (int i=0; i<numValvulas;i++){ //asigna parametros de riego a cada valvula
     valvulas[i].asignaParametros(i, tiemposRiego[i], horaRiego, minutoRiego);
   }
@@ -131,13 +133,34 @@ void setup() {
   initWiFi();
   initWebSocket();
 
-  // Route for root / web page
+  server.serveStatic("/", LittleFS, "/");
+  // Server Root URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(LittleFS, "/index.html", "text/html",false);
+    request->send(LittleFS, "/index.html", "text/html");
   });
   
-  server.serveStatic("/", LittleFS, "/");
+  // Route for /sensors web page
+  server.on("/sensor", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(LittleFS, "/sensor.html", "text/html");
+  });
+
+  // Route for /valves web page
+  server.on("/valves", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(LittleFS, "/valves.html", "text/html",false);
+  });
   
+  events.onConnect([](AsyncEventSourceClient *client){
+  if(client->lastId()){
+    Serial.printf("Client reconnected! Last message ID that it got is: %u\n",
+    client->lastId());
+  }
+  // send event with message "hello!", id current millis
+  // and set reconnect delay to 1 second
+  client->send("hello!", NULL, millis(), 10000);
+  });
+  
+  server.addHandler(&events);
+
   AsyncElegantOTA.begin(&server); // Start ElegantOTA
   
   server.begin(); // Start server

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ESP IOT DASHBOARD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="icon"  type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+</head>
+<body>
+    <div class="topnav" id="myTopnav">
+        <a href="#" class="disabled">Sistema de Riego Web</a>
+        <div class="topnav-right">
+          <a href="valves">Riego</a>
+          <a href="sensor">Sensor</a>
+          <a href="/">Inicio</a>
+        </div>
+        <a href="javascript:void(0);" class="icon" onclick="handleNavBar()">
+          <i class="fa fa-bars"></i>
+        </a>
+      </div>
+  <div class="content">
+    <div class="card-grid">
+      <div class="card"> 
+        <p class="card-title"><i class="fa-solid fa-droplet"></i> Bancal 1</p>
+        <label class="switch">
+          <input type="checkbox" onchange="toggleCheckbox(this)" id="0">
+          <span class="slider"></span>
+        </label>
+        <p class ="state">State: <span id="0s"></span></p>
+      </div>
+      <div class="card">
+        <p class="card-title"><i class="fas fa-lightbulb"></i> Bancal 2</p>
+        <label class="switch">
+          <input type="checkbox" onchange="toggleCheckbox(this)" id="1">
+          <span class="slider"></span>
+        </label>
+        <p class ="state">State: <span id="1s"></span></p>
+      </div>
+      <div class="card">
+        <p class="card-title"><i class="fas fa-lightbulb"></i> Bancal 3</p>
+        <label class="switch">
+          <input type="checkbox" onchange="toggleCheckbox(this)" id="2">
+          <span class="slider"></span>
+        </label>
+        <p class ="state">State: <span id="2s"></span></p>
+      </div>
+      <div class="card">
+        <p class="card-title"><i class="fas fa-lightbulb"></i> Bancal 4</p>
+        <label class="switch">
+          <input type="checkbox" onchange="toggleCheckbox(this)" id="3">
+          <span class="slider"></span>
+        </label>
+        <p class="state">State: <span id="3s"></span></p>
+      </div>
+      <div class="card">
+        <p class="card-title"><i class="fas fa-lightbulb"></i> Bancal 5</p>
+        <label class="switch">
+          <input type="checkbox" onchange="toggleCheckbox(this)" id="4">
+          <span class="slider"></span>
+        </label>
+        <p class="state">State: <span id="4s"></span></p>
+      </div>
+      <div class="card">
+        <p class="card-title"><i class="fas fa-lightbulb"></i> Bancal 6</p>
+        <label class="switch">
+          <input type="checkbox" onchange="toggleCheckbox(this)" id="5">
+          <span class="slider"></span>
+        </label>
+        <p class="state">State: <span id="5s"></span></p>
+      </div>
+    </div>
+  </div>
+<script src="/script.js"></script>
+<script src="/script-valves.js"></script>
+</body>
+</html>
